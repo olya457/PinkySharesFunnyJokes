@@ -12,6 +12,7 @@ import { SaveHeart } from '../components/SaveHeart';
 import { ShareButton } from '../components/ShareButton';
 import { giggleCategories, GiggleCategory } from '../data/giggleAtlas';
 import { KeepsakeItem } from '../storage/keepsakeStore';
+import { useCompactLayout } from '../theme/layout';
 import { palette, round } from '../theme/palette';
 
 type QuipHarborScreenProps = {
@@ -27,6 +28,7 @@ const tint = {
 
 export function QuipHarborScreen({ isKept, toggleKeep }: QuipHarborScreenProps) {
   const [categoryId, setCategoryId] = useState<GiggleCategory['id'] | null>(null);
+  const compact = useCompactLayout();
   const category = useMemo(
     () => giggleCategories.find(item => item.id === categoryId),
     [categoryId],
@@ -35,8 +37,12 @@ export function QuipHarborScreen({ isKept, toggleKeep }: QuipHarborScreenProps) 
   if (category) {
     return (
       <Stage onBack={() => setCategoryId(null)} title={category.title}>
-        <Image resizeMode="contain" source={category.image} style={styles.detailArt} />
-        <View style={styles.list}>
+        <Image
+          resizeMode="contain"
+          source={category.image}
+          style={[styles.detailArt, compact.isShort && styles.compactDetailArt]}
+        />
+        <View style={[styles.list, compact.isShort && styles.compactList]}>
           {category.jokes.map((joke, index) => {
             const id = `joke:${category.id}:${index}`;
             return (
@@ -46,6 +52,7 @@ export function QuipHarborScreen({ isKept, toggleKeep }: QuipHarborScreenProps) 
                 isKept={isKept(id)}
                 joke={joke}
                 key={id}
+                compact={compact.isShort}
                 onToggle={() =>
                   toggleKeep({
                     id,
@@ -67,7 +74,7 @@ export function QuipHarborScreen({ isKept, toggleKeep }: QuipHarborScreenProps) 
   return (
     <Stage title="Jokes">
       <PinkyNote message="Choose a category and start laughing!" />
-      <View style={styles.cards}>
+      <View style={[styles.cards, compact.isShort && styles.compactCards]}>
         {giggleCategories.map(categoryItem => (
           <Pressable
             accessibilityRole="button"
@@ -79,10 +86,15 @@ export function QuipHarborScreen({ isKept, toggleKeep }: QuipHarborScreenProps) 
                 backgroundColor: tint[categoryItem.palette].card,
                 borderColor: tint[categoryItem.palette].border,
               },
+              compact.isShort && styles.compactCategoryCard,
               pressed && styles.pressed,
             ]}
           >
-            <Image resizeMode="contain" source={categoryItem.image} style={styles.categoryImage} />
+            <Image
+              resizeMode="contain"
+              source={categoryItem.image}
+              style={[styles.categoryImage, compact.isShort && styles.compactCategoryImage]}
+            />
             <View style={styles.categoryCopy}>
               <Text adjustsFontSizeToFit numberOfLines={1} style={styles.categoryTitle}>
                 {categoryItem.title}
@@ -106,18 +118,21 @@ function JokeCard({
   index,
   isKept,
   joke,
+  compact,
   onToggle,
 }: {
   accent: GiggleCategory['palette'];
   index: number;
   isKept: boolean;
   joke: string;
+  compact: boolean;
   onToggle: () => void;
 }) {
   return (
     <View
       style={[
         styles.jokeCard,
+        compact && styles.compactJokeCard,
         {
           backgroundColor: tint[accent].card,
           borderColor: tint[accent].border,
@@ -140,6 +155,10 @@ const styles = StyleSheet.create({
     gap: 14,
     marginTop: 16,
   },
+  compactCards: {
+    gap: 10,
+    marginTop: 12,
+  },
   categoryCard: {
     minHeight: 106,
     borderRadius: round.panel,
@@ -148,10 +167,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
   },
+  compactCategoryCard: {
+    minHeight: 88,
+    padding: 8,
+  },
   categoryImage: {
     width: 118,
     height: 86,
     marginRight: 10,
+  },
+  compactCategoryImage: {
+    width: 92,
+    height: 70,
+    marginRight: 8,
   },
   categoryCopy: {
     flex: 1,
@@ -192,8 +220,16 @@ const styles = StyleSheet.create({
     height: 140,
     marginBottom: 8,
   },
+  compactDetailArt: {
+    width: 178,
+    height: 110,
+    marginBottom: 4,
+  },
   list: {
     gap: 14,
+  },
+  compactList: {
+    gap: 10,
   },
   jokeCard: {
     minHeight: 86,
@@ -202,6 +238,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 18,
     justifyContent: 'space-between',
+  },
+  compactJokeCard: {
+    minHeight: 76,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
   heartPlace: {
     position: 'absolute',

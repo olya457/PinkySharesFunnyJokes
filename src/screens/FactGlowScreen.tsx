@@ -6,6 +6,7 @@ import { ShareButton } from '../components/ShareButton';
 import { Stage } from '../components/Stage';
 import { funFacts } from '../data/giggleAtlas';
 import { KeepsakeItem } from '../storage/keepsakeStore';
+import { useCompactLayout } from '../theme/layout';
 import { palette, round } from '../theme/palette';
 
 type FactGlowScreenProps = {
@@ -14,14 +15,16 @@ type FactGlowScreenProps = {
 };
 
 export function FactGlowScreen({ isKept, toggleKeep }: FactGlowScreenProps) {
+  const compact = useCompactLayout();
+
   return (
     <Stage title="Fun facts">
       <PinkyNote message="Funny facts that will cheer you up!" />
-      <View style={styles.list}>
+      <View style={[styles.list, compact.isShort && styles.compactList]}>
         {funFacts.map((fact, index) => {
           const id = `fact:${index}`;
           return (
-            <View key={id} style={styles.card}>
+            <View key={id} style={[styles.card, compact.isShort && styles.compactCard]}>
               <View style={styles.heartPlace}>
                 <SaveHeart
                   active={isKept(id)}
@@ -54,6 +57,10 @@ const styles = StyleSheet.create({
     gap: 14,
     marginTop: 16,
   },
+  compactList: {
+    gap: 10,
+    marginTop: 12,
+  },
   card: {
     minHeight: 104,
     borderRadius: round.panel,
@@ -63,6 +70,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 26,
     paddingVertical: 20,
     justifyContent: 'space-between',
+  },
+  compactCard: {
+    minHeight: 88,
+    paddingHorizontal: 18,
+    paddingVertical: 15,
   },
   heartPlace: {
     position: 'absolute',

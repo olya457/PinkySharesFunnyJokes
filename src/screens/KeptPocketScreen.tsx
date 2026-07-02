@@ -7,6 +7,7 @@ import { ShareButton } from '../components/ShareButton';
 import { Stage } from '../components/Stage';
 import { DockRoute } from '../navigation/paths';
 import { KeepsakeItem, KeepsakeKind } from '../storage/keepsakeStore';
+import { useCompactLayout } from '../theme/layout';
 import { palette, round } from '../theme/palette';
 
 type KeptPocketScreenProps = {
@@ -29,6 +30,7 @@ const cardTint = {
 
 export function KeptPocketScreen({ items, goToDock, toggleKeep }: KeptPocketScreenProps) {
   const [tab, setTab] = useState<KeepsakeKind>('joke');
+  const compact = useCompactLayout();
   const activeItems = useMemo(
     () => items.filter(item => item.kind === tab).sort((a, b) => b.createdAt - a.createdAt),
     [items, tab],
@@ -38,13 +40,13 @@ export function KeptPocketScreen({ items, goToDock, toggleKeep }: KeptPocketScre
   return (
     <Stage title="Saved">
       <PinkyNote message="All your favorite jokes, stories and facts in one place!" />
-      <View style={styles.segment}>
+      <View style={[styles.segment, compact.isShort && styles.compactSegment]}>
         {tabs.map(item => (
           <Pressable
             accessibilityRole="button"
             key={item.key}
             onPress={() => setTab(item.key)}
-            style={[styles.segmentButton, tab === item.key && styles.segmentActive]}
+            style={[styles.segmentButton, compact.isShort && styles.compactSegmentButton, tab === item.key && styles.segmentActive]}
           >
             <Text style={[styles.segmentText, tab === item.key && styles.segmentActiveText]}>
               {item.label}
@@ -53,16 +55,16 @@ export function KeptPocketScreen({ items, goToDock, toggleKeep }: KeptPocketScre
         ))}
       </View>
       {activeItems.length === 0 ? (
-        <View style={styles.emptyWrap}>
-          <View style={styles.emptyCard}>
+        <View style={[styles.emptyWrap, compact.isShort && styles.compactEmptyWrap]}>
+          <View style={[styles.emptyCard, compact.isShort && styles.compactEmptyCard]}>
             <Text style={styles.emptyText}>
               You do not have anything saved yet. Save a joke, story, or fact and it will appear here.
             </Text>
           </View>
-          <ActionButton onPress={() => goToDock(activeTab.route)} style={styles.emptyButton} title={activeTab.label} />
+          <ActionButton onPress={() => goToDock(activeTab.route)} style={[styles.emptyButton, compact.isShort && styles.compactEmptyButton]} title={activeTab.label} />
         </View>
       ) : (
-        <View style={styles.list}>
+        <View style={[styles.list, compact.isShort && styles.compactList]}>
           {activeItems.map(item => (
             <View
               key={item.id}
@@ -72,6 +74,7 @@ export function KeptPocketScreen({ items, goToDock, toggleKeep }: KeptPocketScre
                   backgroundColor: cardTint[item.accent].card,
                   borderColor: cardTint[item.accent].border,
                 },
+                compact.isShort && styles.compactCard,
               ]}
             >
               <View style={styles.heartPlace}>
@@ -104,6 +107,10 @@ const styles = StyleSheet.create({
     padding: 5,
     marginTop: 16,
   },
+  compactSegment: {
+    minHeight: 46,
+    marginTop: 12,
+  },
   segmentButton: {
     flex: 1,
     minHeight: 38,
@@ -112,23 +119,45 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 8,
   },
+  compactSegmentButton: {
+    minHeight: 32,
+  },
   segmentActive: {
     backgroundColor: palette.rose,
     borderWidth: 4,
     borderColor: '#ff7da5',
+  },
+  compactEmptyWrap: {
+    marginTop: 12,
+    gap: 16,
   },
   segmentText: {
     color: palette.ink,
     fontSize: 16,
     fontWeight: '500',
   },
+  compactEmptyCard: {
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+  },
+  compactEmptyButton: {
+    width: '78%',
+  },
   segmentActiveText: {
     color: palette.white,
     fontWeight: '800',
   },
+  compactList: {
+    gap: 12,
+    marginTop: 12,
+  },
   emptyWrap: {
     marginTop: 16,
     gap: 24,
+  },
+  compactCard: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   emptyCard: {
     borderRadius: round.panel,

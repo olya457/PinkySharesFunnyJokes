@@ -6,12 +6,14 @@ import { PinkyNote } from '../components/PinkyNote';
 import { ShareButton } from '../components/ShareButton';
 import { Stage } from '../components/Stage';
 import { finishCards } from '../data/giggleAtlas';
+import { useCompactLayout } from '../theme/layout';
 import { palette, round } from '../theme/palette';
 
 export function PunchPatchScreen() {
   const [cardIndex, setCardIndex] = useState(0);
   const [choice, setChoice] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
+  const compact = useCompactLayout();
   const card = finishCards[cardIndex];
   const selectedEnding = choice === null ? '' : card.endings[choice];
   const fullJoke = `${card.setup.replace('...', '.')} ${selectedEnding}`;
@@ -25,13 +27,17 @@ export function PunchPatchScreen() {
   if (revealed) {
     return (
       <Stage onBack={() => setRevealed(false)} title="Finish the joke">
-        <Image resizeMode="contain" source={gallery.pinkyLaugh} style={styles.resultArt} />
-        <View style={styles.resultCard}>
+        <Image
+          resizeMode="contain"
+          source={gallery.pinkyLaugh}
+          style={[styles.resultArt, compact.isShort && styles.compactResultArt]}
+        />
+        <View style={[styles.resultCard, compact.isShort && styles.compactResultCard]}>
           <Text style={styles.resultTitle}>Your joke:</Text>
           <Text style={styles.resultText}>{fullJoke}</Text>
           <ShareButton message={fullJoke} />
         </View>
-        <ActionButton onPress={next} style={styles.nextButton} title="Next joke" />
+        <ActionButton onPress={next} style={[styles.nextButton, compact.isShort && styles.compactButton]} title="Next joke" />
       </Stage>
     );
   }
@@ -39,10 +45,10 @@ export function PunchPatchScreen() {
   return (
     <Stage title="Finish the joke">
       <PinkyNote message="Keep the joke going, let's laugh together!" />
-      <View style={styles.setupCard}>
+      <View style={[styles.setupCard, compact.isShort && styles.compactSetupCard]}>
         <Text style={styles.setupText}>{card.setup}</Text>
       </View>
-      <View style={styles.choiceCard}>
+      <View style={[styles.choiceCard, compact.isShort && styles.compactChoiceCard]}>
         <Text style={styles.choiceTitle}>Choose the funniest ending</Text>
         {card.endings.map((ending, index) => {
           const selected = choice === index;
@@ -51,7 +57,7 @@ export function PunchPatchScreen() {
               accessibilityRole="button"
               key={ending}
               onPress={() => setChoice(index)}
-              style={[styles.choiceButton, selected && styles.choiceSelected]}
+              style={[styles.choiceButton, compact.isShort && styles.compactChoiceButton, selected && styles.choiceSelected]}
             >
               <Text style={styles.choiceText}>{`${String.fromCharCode(65 + index)}) ${ending}`}</Text>
             </Pressable>
@@ -78,11 +84,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 24,
   },
+  compactSetupCard: {
+    marginTop: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+  },
   setupText: {
     color: palette.ink,
     fontSize: 20,
     lineHeight: 26,
     fontWeight: '600',
+  },
+  compactChoiceCard: {
+    marginTop: 12,
+    padding: 11,
   },
   choiceCard: {
     marginTop: 16,
@@ -91,6 +106,10 @@ const styles = StyleSheet.create({
     borderColor: palette.blushLine,
     backgroundColor: palette.blush,
     padding: 14,
+  },
+  compactChoiceButton: {
+    minHeight: 46,
+    marginBottom: 9,
   },
   choiceTitle: {
     color: palette.ink,
@@ -124,12 +143,20 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '86%',
   },
+  compactButton: {
+    marginTop: 12,
+  },
   resultArt: {
     alignSelf: 'center',
     width: 300,
     height: 290,
     marginTop: -14,
     marginBottom: 4,
+  },
+  compactResultArt: {
+    width: 224,
+    height: 220,
+    marginTop: -20,
   },
   resultCard: {
     borderRadius: round.panel,
@@ -139,6 +166,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 20,
     alignItems: 'center',
+  },
+  compactResultCard: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   resultTitle: {
     color: palette.white,

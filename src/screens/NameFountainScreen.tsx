@@ -15,6 +15,7 @@ import { PinkyNote } from '../components/PinkyNote';
 import { ShareButton } from '../components/ShareButton';
 import { Stage } from '../components/Stage';
 import { nicknamePool } from '../data/giggleAtlas';
+import { useCompactLayout } from '../theme/layout';
 import { palette, round } from '../theme/palette';
 
 type MoodId = 'happy' | 'calm' | 'stormy';
@@ -33,6 +34,7 @@ export function NameFountainScreen() {
   const [mood, setMood] = useState<MoodId | null>(null);
   const [nickname, setNickname] = useState('');
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const compact = useCompactLayout();
   const cleanName = name.trim();
   const ready = cleanName.length > 0 && mood !== null;
   const shareMessage = cleanName ? `${cleanName}'s funny nickname is ${nickname}.` : `My funny nickname is ${nickname}.`;
@@ -82,8 +84,12 @@ export function NameFountainScreen() {
   if (nickname) {
     return (
       <Stage onBack={() => setNickname('')} title="Results">
-        <Image resizeMode="contain" source={gallery.pinkyTilt} style={styles.resultArt} />
-        <View style={styles.resultCard}>
+        <Image
+          resizeMode="contain"
+          source={gallery.pinkyTilt}
+          style={[styles.resultArt, compact.isShort && styles.compactResultArt]}
+        />
+        <View style={[styles.resultCard, compact.isShort && styles.compactResultCard]}>
           <Text style={styles.resultTitle}>Your nickname:</Text>
           <View style={styles.nickPill}>
             <Text adjustsFontSizeToFit numberOfLines={1} style={styles.nickText}>
@@ -92,7 +98,7 @@ export function NameFountainScreen() {
           </View>
           <ShareButton message={shareMessage} />
         </View>
-        <ActionButton onPress={generate} style={styles.mainButton} title="Generate again" />
+        <ActionButton onPress={generate} style={[styles.mainButton, compact.isShort && styles.compactMainButton]} title="Generate again" />
       </Stage>
     );
   }
@@ -100,7 +106,7 @@ export function NameFountainScreen() {
   return (
     <Stage title="Nickname Generator">
       <PinkyNote message="Let's come up with a funny nickname for you!" />
-      <View style={styles.inputCard}>
+      <View style={[styles.inputCard, compact.isShort && styles.compactInputCard]}>
         <Text style={styles.sectionTitle}>Enter your name</Text>
         <TextInput
           autoCapitalize="words"
@@ -124,7 +130,7 @@ export function NameFountainScreen() {
           visible={keyboardVisible}
         />
       </View>
-      <View style={styles.moodCard}>
+      <View style={[styles.moodCard, compact.isShort && styles.compactMoodCard]}>
         <Text style={styles.sectionTitle}>How are you feeling today?</Text>
         <View style={styles.moods}>
           {moods.map(item => {
@@ -134,7 +140,7 @@ export function NameFountainScreen() {
                 accessibilityRole="button"
                 key={item.id}
                 onPress={() => setMood(item.id)}
-                style={[styles.moodButton, selected && styles.moodSelected]}
+                style={[styles.moodButton, compact.isShort && styles.compactMoodButton, selected && styles.moodSelected]}
               >
                 <Text style={styles.moodEmoji}>{item.emoji}</Text>
                 <Text style={styles.moodLabel}>{item.label}</Text>
@@ -143,7 +149,12 @@ export function NameFountainScreen() {
           })}
         </View>
       </View>
-      <ActionButton disabled={!ready} onPress={generate} style={styles.mainButton} title="Generate Nickname" />
+      <ActionButton
+        disabled={!ready}
+        onPress={generate}
+        style={[styles.mainButton, compact.isShort && styles.compactMainButton]}
+        title="Generate Nickname"
+      />
     </Stage>
   );
 }
@@ -162,6 +173,7 @@ function NameKeyboard({
   visible: boolean;
 }) {
   const motion = useRef(new Animated.Value(0)).current;
+  const compact = useCompactLayout();
 
   useEffect(() => {
     Animated.timing(motion, {
@@ -180,7 +192,7 @@ function NameKeyboard({
         {
           maxHeight: motion.interpolate({
             inputRange: [0, 1],
-            outputRange: [0, 188],
+            outputRange: [0, compact.isShort ? 154 : 188],
           }),
           marginTop: motion.interpolate({
             inputRange: [0, 1],
@@ -199,27 +211,37 @@ function NameKeyboard({
       ]}
     >
       {keyboardRows.map((row, rowIndex) => (
-        <View key={row} style={[styles.keyRow, rowIndex === 2 && styles.shortKeyRow]}>
+        <View
+          key={row}
+          style={[
+            styles.keyRow,
+            compact.isShort && styles.compactKeyRow,
+            rowIndex === 2 && styles.shortKeyRow,
+            compact.isTiny && rowIndex === 2 && styles.tinyShortKeyRow,
+          ]}
+        >
           {row.split('').map(letter => (
-            <KeyboardKey key={letter} label={letter} onPress={() => onLetter(letter)} />
+            <KeyboardKey compact={compact.isShort} key={letter} label={letter} onPress={() => onLetter(letter)} />
           ))}
         </View>
       ))}
-      <View style={styles.commandRow}>
-        <KeyboardKey label="⌫" onPress={onBackspace} wide />
-        <KeyboardKey label="Space" onPress={onSpace} grow />
-        <KeyboardKey label="Done" onPress={onDone} wide />
+      <View style={[styles.commandRow, compact.isShort && styles.compactCommandRow]}>
+        <KeyboardKey compact={compact.isShort} label="⌫" onPress={onBackspace} wide />
+        <KeyboardKey compact={compact.isShort} label="Space" onPress={onSpace} grow />
+        <KeyboardKey compact={compact.isShort} label="Done" onPress={onDone} wide />
       </View>
     </Animated.View>
   );
 }
 
 function KeyboardKey({
+  compact,
   grow,
   label,
   onPress,
   wide,
 }: {
+  compact: boolean;
   grow?: boolean;
   label: string;
   onPress: () => void;
@@ -231,6 +253,7 @@ function KeyboardKey({
       onPress={onPress}
       style={({ pressed }) => [
         styles.key,
+        compact && styles.compactKey,
         wide && styles.wideKey,
         grow && styles.growKey,
         pressed && styles.keyPressed,
@@ -251,6 +274,10 @@ const styles = StyleSheet.create({
     borderColor: palette.blushLine,
     backgroundColor: palette.blush,
     padding: 14,
+  },
+  compactInputCard: {
+    marginTop: 12,
+    padding: 11,
   },
   sectionTitle: {
     color: palette.ink,
@@ -280,12 +307,22 @@ const styles = StyleSheet.create({
     gap: 4,
     marginBottom: 6,
   },
+  compactKeyRow: {
+    gap: 3,
+    marginBottom: 5,
+  },
   shortKeyRow: {
     paddingHorizontal: 24,
+  },
+  tinyShortKeyRow: {
+    paddingHorizontal: 14,
   },
   commandRow: {
     flexDirection: 'row',
     gap: 6,
+  },
+  compactCommandRow: {
+    gap: 5,
   },
   key: {
     flex: 1,
@@ -303,11 +340,22 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
+  compactKey: {
+    minHeight: 29,
+    borderWidth: 1,
+  },
   wideKey: {
     flex: 1.25,
   },
+  compactMoodCard: {
+    marginTop: 14,
+    padding: 11,
+  },
   growKey: {
     flex: 2.8,
+  },
+  compactMoodButton: {
+    minHeight: 88,
   },
   keyPressed: {
     backgroundColor: palette.rose,
@@ -359,12 +407,20 @@ const styles = StyleSheet.create({
     width: '86%',
     marginTop: 22,
   },
+  compactMainButton: {
+    marginTop: 14,
+  },
   resultArt: {
     alignSelf: 'center',
     width: 270,
     height: 260,
     marginTop: 18,
     marginBottom: -4,
+  },
+  compactResultArt: {
+    width: 214,
+    height: 208,
+    marginTop: 4,
   },
   resultCard: {
     borderRadius: round.panel,
@@ -374,6 +430,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 20,
     alignItems: 'center',
+  },
+  compactResultCard: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   resultTitle: {
     color: palette.white,

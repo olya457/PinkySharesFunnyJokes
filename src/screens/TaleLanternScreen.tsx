@@ -7,6 +7,7 @@ import { ShareButton } from '../components/ShareButton';
 import { Stage } from '../components/Stage';
 import { tales } from '../data/giggleAtlas';
 import { KeepsakeItem } from '../storage/keepsakeStore';
+import { useCompactLayout } from '../theme/layout';
 import { palette, round } from '../theme/palette';
 
 type TaleLanternScreenProps = {
@@ -16,6 +17,7 @@ type TaleLanternScreenProps = {
 
 export function TaleLanternScreen({ isKept, toggleKeep }: TaleLanternScreenProps) {
   const [index, setIndex] = useState(0);
+  const compact = useCompactLayout();
   const tale = tales[index];
   const id = `story:${tale.id}`;
   const message = useMemo(() => `${tale.title}\n\n${tale.body}`, [tale]);
@@ -31,18 +33,22 @@ export function TaleLanternScreen({ isKept, toggleKeep }: TaleLanternScreenProps
 
   return (
     <Stage title="Stories">
-      <View style={styles.hero}>
+      <View style={[styles.hero, compact.isShort && styles.compactHero]}>
         <View style={styles.heroCopy}>
           <Text style={styles.counter}>{`Story ${index + 1} of ${tales.length}`}</Text>
         </View>
-        <Image resizeMode="contain" source={gallery.pinkySpark} style={styles.pinky} />
+        <Image
+          resizeMode="contain"
+          source={gallery.pinkySpark}
+          style={[styles.pinky, compact.isShort && styles.compactPinky]}
+        />
       </View>
-      <View style={styles.storyCard}>
+      <View style={[styles.storyCard, compact.isShort && styles.compactStoryCard]}>
         <Text adjustsFontSizeToFit numberOfLines={2} style={styles.storyTitle}>
           {tale.title}
         </Text>
         <Text style={styles.storyText}>{tale.body}</Text>
-        <View style={styles.storyActions}>
+        <View style={[styles.storyActions, compact.isShort && styles.compactStoryActions]}>
           <ActionButton
             disabled={index === 0}
             onPress={() => setIndex(current => Math.max(0, current - 1))}
@@ -70,11 +76,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 8,
   },
+  compactHero: {
+    minHeight: 92,
+    marginBottom: 2,
+  },
   heroCopy: {
     alignItems: 'center',
     marginTop: 10,
     marginRight: -18,
     zIndex: 2,
+  },
+  compactPinky: {
+    width: 102,
+    height: 104,
   },
   counter: {
     color: palette.ink,
@@ -88,9 +102,17 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     overflow: 'hidden',
   },
+  compactStoryCard: {
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
   pinky: {
     width: 126,
     height: 128,
+  },
+  compactStoryActions: {
+    marginTop: 14,
+    gap: 8,
   },
   storyCard: {
     borderRadius: round.panel,

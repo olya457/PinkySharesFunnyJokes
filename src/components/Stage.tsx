@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { gallery } from '../assets/gallery';
+import { useCompactLayout } from '../theme/layout';
 import { palette } from '../theme/palette';
 
 type StageProps = {
@@ -27,15 +28,18 @@ type StageProps = {
 
 export function useStageChrome() {
   const insets = useSafeAreaInsets();
+  const compact = useCompactLayout();
   const top = Platform.OS === 'android' ? insets.top + 30 : Math.max(insets.top + 12, 26);
   const dockBottom = Platform.OS === 'android' ? insets.bottom + 30 : insets.bottom + 20;
-  const dockHeight = 78;
+  const dockHeight = compact.dockHeight;
+  const contentExtra = compact.isTiny ? 14 : compact.isShort ? 18 : 28;
 
   return {
     top,
     dockBottom,
     dockHeight,
-    contentBottom: dockBottom + dockHeight + 28,
+    gutter: compact.gutter,
+    contentBottom: dockBottom + dockHeight + contentExtra,
   };
 }
 
@@ -49,6 +53,7 @@ export function Stage({ children, contentStyle, onBack, scroll = true, title }: 
     {
       paddingTop: chrome.top,
       paddingBottom: chrome.contentBottom,
+      paddingHorizontal: chrome.gutter,
     },
     contentStyle,
   ];
@@ -133,7 +138,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flexGrow: 1,
-    paddingHorizontal: 16,
   },
   header: {
     minHeight: 58,

@@ -5,10 +5,12 @@ import { ActionButton } from '../components/ActionButton';
 import { ShareButton } from '../components/ShareButton';
 import { Stage } from '../components/Stage';
 import { randomJokes } from '../data/giggleAtlas';
+import { useCompactLayout } from '../theme/layout';
 import { palette, round } from '../theme/palette';
 
 export function SurpriseBeanScreen() {
   const [jokeIndex, setJokeIndex] = useState<number | null>(null);
+  const compact = useCompactLayout();
   const joke = jokeIndex === null ? null : randomJokes[jokeIndex];
 
   const pick = () => {
@@ -29,23 +31,23 @@ export function SurpriseBeanScreen() {
     const message = `${joke.setup}\n${joke.punchline}`;
     return (
       <Stage onBack={() => setJokeIndex(null)} title="Random Joke">
-        <Image resizeMode="contain" source={gallery.jokeMedallion} style={styles.badge} />
-        <View style={styles.jokeCard}>
+        <Image resizeMode="contain" source={gallery.jokeMedallion} style={[styles.badge, compact.isShort && styles.compactBadge]} />
+        <View style={[styles.jokeCard, compact.isShort && styles.compactJokeCard]}>
           <Text style={styles.jokeText}>{message}</Text>
           <ShareButton message={message} />
         </View>
-        <ActionButton onPress={pick} style={styles.button} title="Give me another joke!" />
+        <ActionButton onPress={pick} style={[styles.button, compact.isShort && styles.compactButton]} title="Give me another joke!" />
       </Stage>
     );
   }
 
   return (
     <Stage title="Random Joke">
-      <Image resizeMode="contain" source={gallery.pinkyPointdown} style={styles.pinky} />
-      <View style={styles.introCard}>
-        <Text style={styles.introText}>Tap the button and I'll tell you something funny.</Text>
+      <Image resizeMode="contain" source={gallery.pinkyPointdown} style={[styles.pinky, compact.isShort && styles.compactPinky]} />
+      <View style={[styles.introCard, compact.isShort && styles.compactIntroCard]}>
+        <Text adjustsFontSizeToFit numberOfLines={3} style={styles.introText}>Tap the button and I'll tell you something funny.</Text>
       </View>
-      <ActionButton onPress={pick} style={styles.button} title="Tell a joke!" />
+      <ActionButton onPress={pick} style={[styles.button, compact.isShort && styles.compactButton]} title="Tell a joke!" />
     </Stage>
   );
 }
@@ -58,12 +60,21 @@ const styles = StyleSheet.create({
     marginTop: 0,
     marginBottom: 0,
   },
+  compactPinky: {
+    width: 238,
+    height: 218,
+  },
   badge: {
     width: 300,
     height: 300,
     alignSelf: 'center',
     marginTop: 4,
     marginBottom: 18,
+  },
+  compactBadge: {
+    width: 226,
+    height: 226,
+    marginBottom: 10,
   },
   introCard: {
     borderRadius: round.panel,
@@ -74,12 +85,20 @@ const styles = StyleSheet.create({
     paddingVertical: 26,
     alignItems: 'center',
   },
+  compactIntroCard: {
+    paddingHorizontal: 18,
+    paddingVertical: 18,
+  },
   introText: {
     color: palette.white,
     fontSize: 25,
     lineHeight: 31,
     fontWeight: '700',
     textAlign: 'center',
+  },
+  compactJokeCard: {
+    paddingHorizontal: 16,
+    paddingVertical: 17,
   },
   jokeCard: {
     borderRadius: round.panel,
@@ -89,6 +108,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 22,
     alignItems: 'center',
+  },
+  compactButton: {
+    marginTop: 14,
   },
   jokeText: {
     color: palette.white,

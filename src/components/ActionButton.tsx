@@ -1,16 +1,18 @@
 import React, { useRef } from 'react';
-import { Animated, Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
+import { Animated, Pressable, StyleProp, StyleSheet, Text, ViewStyle } from 'react-native';
+import { useCompactLayout } from '../theme/layout';
 import { palette, round } from '../theme/palette';
 
 type ActionButtonProps = {
   title: string;
   onPress: () => void;
   disabled?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 };
 
 export function ActionButton({ title, onPress, disabled, style }: ActionButtonProps) {
   const scale = useRef(new Animated.Value(1)).current;
+  const compact = useCompactLayout();
   const animateScale = (toValue: number) => {
     Animated.spring(scale, {
       toValue,
@@ -34,6 +36,7 @@ export function ActionButton({ title, onPress, disabled, style }: ActionButtonPr
         onPressOut={() => animateScale(1)}
         style={({ pressed }) => [
           styles.button,
+          { minHeight: compact.compactButtonHeight },
           disabled && styles.disabled,
           pressed && !disabled && styles.pressed,
         ]}
@@ -48,7 +51,6 @@ export function ActionButton({ title, onPress, disabled, style }: ActionButtonPr
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 62,
     borderRadius: round.pill,
     backgroundColor: palette.spring,
     alignItems: 'center',

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { gallery } from '../assets/gallery';
+import { useCompactLayout } from '../theme/layout';
 import { palette, round } from '../theme/palette';
 
 type PinkyNoteProps = {
@@ -10,6 +11,7 @@ type PinkyNoteProps = {
 
 export function PinkyNote({ title = 'Pinky:', message }: PinkyNoteProps) {
   const bob = useRef(new Animated.Value(0)).current;
+  const compact = useCompactLayout();
 
   useEffect(() => {
     const loop = Animated.loop(
@@ -33,12 +35,20 @@ export function PinkyNote({ title = 'Pinky:', message }: PinkyNoteProps) {
   }, [bob]);
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        compact.isShort && styles.compactCard,
+        compact.isTiny && styles.tinyCard,
+      ]}
+    >
       <Animated.Image
         resizeMode="contain"
         source={gallery.pinkySpark}
         style={[
           styles.image,
+          compact.isShort && styles.compactImage,
+          compact.isTiny && styles.tinyImage,
           {
             transform: [
               {
@@ -53,7 +63,9 @@ export function PinkyNote({ title = 'Pinky:', message }: PinkyNoteProps) {
       />
       <View style={styles.textWrap}>
         <Text style={styles.title}>{title}</Text>
-        <Text style={styles.message}>{message}</Text>
+        <Text numberOfLines={compact.isTiny ? 2 : 3} style={styles.message}>
+          {message}
+        </Text>
       </View>
     </View>
   );
@@ -71,11 +83,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     overflow: 'hidden',
   },
+  compactCard: {
+    minHeight: 96,
+    paddingHorizontal: 14,
+  },
+  tinyCard: {
+    minHeight: 86,
+    paddingHorizontal: 12,
+  },
   image: {
     width: 90,
     height: 100,
     marginRight: 16,
     alignSelf: 'flex-end',
+  },
+  compactImage: {
+    width: 78,
+    height: 90,
+    marginRight: 12,
+  },
+  tinyImage: {
+    width: 66,
+    height: 78,
+    marginRight: 10,
   },
   textWrap: {
     flex: 1,

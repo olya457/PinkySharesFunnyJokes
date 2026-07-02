@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { gallery } from '../assets/gallery';
 import { ActionButton } from '../components/ActionButton';
+import { useCompactLayout } from '../theme/layout';
 import { palette, round } from '../theme/palette';
 
 type TrailShowScreenProps = {
@@ -54,11 +55,15 @@ const slides = [
 export function TrailShowScreen({ onDone }: TrailShowScreenProps) {
   const [index, setIndex] = useState(0);
   const insets = useSafeAreaInsets();
+  const compact = useCompactLayout();
   const { height, width } = useWindowDimensions();
   const slide = slides[index];
   const top = Platform.OS === 'android' ? insets.top + 30 : Math.max(insets.top + 12, 26);
   const bottom = Platform.OS === 'android' ? insets.bottom + 30 : insets.bottom + 20;
-  const artSize = useMemo(() => Math.min(width * 0.82, Math.max(210, height * 0.38)), [height, width]);
+  const artSize = useMemo(
+    () => Math.min(width * (compact.isTiny ? 0.66 : 0.82), Math.max(compact.isTiny ? 168 : 205, height * (compact.isShort ? 0.3 : 0.38))),
+    [compact.isShort, compact.isTiny, height, width],
+  );
   const last = index === slides.length - 1;
 
   const next = () => {
@@ -75,20 +80,28 @@ export function TrailShowScreen({ onDone }: TrailShowScreenProps) {
         bounces={false}
         contentContainerStyle={[
           styles.content,
-          { paddingTop: top, paddingBottom: bottom + 16 },
+          {
+            paddingTop: compact.isShort ? Math.max(top - 10, 14) : top,
+            paddingBottom: bottom + (compact.isTiny ? 10 : 16),
+            paddingHorizontal: compact.gutter,
+          },
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.artWrap}>
+        <View style={[styles.artWrap, compact.isShort && styles.compactArtWrap]}>
           <Image resizeMode="contain" source={slide.image} style={{ width: artSize, height: artSize }} />
         </View>
-        <View style={styles.copyCard}>
+        <View style={[styles.copyCard, compact.isShort && styles.compactCopyCard]}>
           <Text adjustsFontSizeToFit numberOfLines={1} style={styles.copyTitle}>
             {slide.title}
           </Text>
           <Text style={styles.copyText}>{slide.body}</Text>
         </View>
-        <ActionButton onPress={next} style={styles.button} title={slide.button} />
+        <ActionButton
+          onPress={next}
+          style={[styles.button, compact.isShort && styles.compactButton]}
+          title={slide.button}
+        />
       </ScrollView>
     </ImageBackground>
   );
@@ -101,7 +114,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flexGrow: 1,
-    paddingHorizontal: 16,
     justifyContent: 'flex-end',
   },
   artWrap: {
@@ -109,6 +121,9 @@ const styles = StyleSheet.create({
     minHeight: 260,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  compactArtWrap: {
+    minHeight: 178,
   },
   copyCard: {
     borderRadius: round.panel,
@@ -118,6 +133,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 22,
     marginBottom: 20,
+  },
+  compactCopyCard: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    marginBottom: 14,
   },
   copyTitle: {
     color: palette.white,
@@ -137,5 +157,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '60%',
     minWidth: 210,
+  },
+  compactButton: {
+    width: '68%',
+    minWidth: 184,
   },
 });
