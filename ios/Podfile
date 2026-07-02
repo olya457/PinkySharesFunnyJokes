@@ -30,5 +30,40 @@ target 'PinkySharesFunnyJokes' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    installer.pods_project.targets.each do |target|
+      next unless target.name == 'fmt'
+
+      target.build_configurations.each do |configuration|
+        configuration.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+
+        definitions = configuration.build_settings['GCC_PREPROCESSOR_DEFINITIONS']
+        definitions = ['$(inherited)'] if definitions.nil?
+        definitions = [definitions] if definitions.is_a?(String)
+        definitions << 'FMT_USE_CONSTEVAL=0' unless definitions.include?('FMT_USE_CONSTEVAL=0')
+        configuration.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = definitions
+      end
+    end
+
+    pod_root = Pod::Config.instance.sandbox.root.to_s
+    [
+      File.join(pod_root, 'fmt', 'include', 'fmt', 'base.h'),
+      File.join(pod_root, 'fmt', 'include', 'fmt', 'core.h'),
+      File.join(pod_root, 'Headers', 'Public', 'fmt', 'base.h'),
+      File.join(pod_root, 'Headers', 'Public', 'fmt', 'core.h'),
+      File.join(pod_root, 'ReactNativeDependencies', 'Headers', 'fmt', 'base.h'),
+      File.join(pod_root, 'ReactNativeDependencies', 'Headers', 'fmt', 'core.h'),
+      File.join(pod_root, 'ReactNativeDependencies', 'framework', 'packages', 'react-native', 'ReactNativeDependencies.xcframework', 'Headers', 'fmt', 'base.h'),
+      File.join(pod_root, 'ReactNativeDependencies', 'framework', 'packages', 'react-native', 'ReactNativeDependencies.xcframework', 'Headers', 'fmt', 'core.h')
+    ].each do |header_path|
+      next unless File.exist?(header_path)
+
+      contents = File.read(header_path)
+      patched = contents.gsub(/(#\s*define\s+FMT_USE_CONSTEVAL\s+)1/) { "#{$1}0" }
+      next if patched == contents
+
+      File.chmod(File.stat(header_path).mode | 0200, header_path)
+      File.write(header_path, patched)
+    end
   end
 end
