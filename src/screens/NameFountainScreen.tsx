@@ -98,7 +98,11 @@ export function NameFountainScreen() {
           </View>
           <ShareButton message={shareMessage} />
         </View>
-        <ActionButton onPress={generate} style={[styles.mainButton, compact.isShort && styles.compactMainButton]} title="Generate again" />
+        <ActionButton
+          onPress={() => setNickname('')}
+          style={[styles.mainButton, compact.isShort && styles.compactMainButton]}
+          title="Generate again"
+        />
       </Stage>
     );
   }
