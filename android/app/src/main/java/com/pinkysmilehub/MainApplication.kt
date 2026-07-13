@@ -1,4 +1,4 @@
-package com.pinky.shares.funny.jokes
+package com.pinkysmilehub
 
 import android.app.Application
 import com.facebook.react.PackageList

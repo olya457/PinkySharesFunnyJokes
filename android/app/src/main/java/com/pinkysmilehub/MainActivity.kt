@@ -1,4 +1,4 @@
-package com.pinky.shares.funny.jokes
+package com.pinkysmilehub
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
